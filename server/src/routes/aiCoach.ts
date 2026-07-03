@@ -1,12 +1,12 @@
 import { Router, Response } from 'express';
 import { store } from '../utils/store.js';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
-import OpenAI from 'openai';
+import { llmProvider } from '../services/llmProvider.js';
 
 export const aiCoachRouter = Router();
 aiCoachRouter.use(authenticateToken);
 
-const openai = new OpenAI();
+
 
 const SYSTEM_PROMPT = `당신은 "MyHealth 건강 코치"입니다. 사용자의 건강 데이터를 쉽게 설명하고, 생활습관 개선을 돕고, 진료 준비를 지원하는 보조 도구입니다.
 
@@ -106,14 +106,7 @@ aiCoachRouter.post('/chat', async (req: AuthRequest, res: Response) => {
       }
     }
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: chatMessages,
-      max_tokens: 1500,
-      temperature: 0.7,
-    });
-
-    const assistantContent = completion.choices[0]?.message?.content || '죄송합니다. 응답을 생성하지 못했습니다. 다시 시도해주세요.';
+    const assistantContent = await llmProvider.chatCompletion(chatMessages) || '죄송합니다. 응답을 생성하지 못했습니다. 다시 시도해주세요.';
 
     // 응답 메타데이터 분류
     let messageType: 'explanation' | 'action_plan' | 'question_suggestion' | 'warning' = 'explanation';
@@ -169,17 +162,10 @@ aiCoachRouter.get('/hospital-questions', async (req: AuthRequest, res: Response)
     const abnormalObs = latestCheckup.observations.filter(o => o.status !== 'normal');
     const obsContext = abnormalObs.map(o => `${o.display}: ${o.value}${o.unit} (상태: ${o.status})`).join('\n');
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: '당신은 환자가 의사에게 물어볼 질문을 생성하는 도우미입니다. 검진 결과에서 이상 소견이 있는 항목을 바탕으로, 환자가 진료 시 의사에게 물어보면 좋을 구체적인 질문 5~7개를 생성하세요. 한국어로 작성하세요.' },
-        { role: 'user', content: `다음은 제 검진 결과 중 이상 소견 항목입니다:\n${obsContext}\n\n이 결과를 바탕으로 다음 진료 때 의사에게 물어볼 질문을 생성해주세요.` },
-      ],
-      max_tokens: 800,
-      temperature: 0.7,
-    });
-
-    const content = completion.choices[0]?.message?.content || '';
+    const content = await llmProvider.chatCompletion([
+      { role: 'system', content: '당신은 환자가 의사에게 물어볼 질문을 생성하는 도우미입니다. 검진 결과에서 이상 소견이 있는 항목을 바탕으로, 환자가 진료 시 의사에게 물어보면 좋을 구체적인 질문 5~7개를 생성하세요. 한국어로 작성하세요.' },
+      { role: 'user', content: `다음은 제 검진 결과 중 이상 소견 항목입니다:\n${obsContext}\n\n이 결과를 바탕으로 다음 진료 때 의사에게 물어볼 질문을 생성해주세요.` },
+    ]) || '';
     const questions = content.split('\n').filter(line => line.trim().length > 0 && (line.includes('?') || line.match(/^\d+\./)));
 
     res.json({ questions, generatedAt: new Date().toISOString(), basedOn: latestCheckup.checkupDate });

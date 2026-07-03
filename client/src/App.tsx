@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom';
-import { Activity, FileText, MessageCircle, Shield, Upload, BarChart3, ClipboardList, Heart } from 'lucide-react';
+import { Activity, FileText, MessageCircle, Shield, Upload, BarChart3, ClipboardList, Heart, Settings } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import CheckupUpload from './pages/CheckupUpload';
 import HealthCoach from './pages/HealthCoach';
@@ -9,6 +9,7 @@ import ConsentView from './pages/ConsentView';
 import AuditView from './pages/AuditView';
 import GoalsView from './pages/GoalsView';
 import MyHealthWayView from './pages/MyHealthWayView';
+import SettingsView from './pages/SettingsView';
 
 function App() {
   const navItems = [
@@ -21,6 +22,7 @@ function App() {
     { to: '/myhealthway', icon: Activity, label: '고속도로 연동' },
     { to: '/consent', icon: Shield, label: '동의 관리' },
     { to: '/audit', icon: ClipboardList, label: '접근 로그' },
+    { to: '/settings', icon: Settings, label: '설정' },
   ];
 
   return (
@@ -81,6 +83,7 @@ function App() {
             <Route path="/myhealthway" element={<MyHealthWayView />} />
             <Route path="/consent" element={<ConsentView />} />
             <Route path="/audit" element={<AuditView />} />
+            <Route path="/settings" element={<SettingsView />} />
           </Routes>
         </main>
       </div>

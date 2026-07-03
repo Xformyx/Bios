@@ -10,6 +10,7 @@ import { reportRouter } from './routes/report.js';
 import { auditRouter } from './routes/audit.js';
 import { uploadRouter } from './routes/upload.js';
 import { myhealthwayRouter } from './routes/myhealthway.js';
+import { settingsRouter } from './routes/settings.js';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/report', reportRouter);
 app.use('/api/audit', auditRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/myhealthway', myhealthwayRouter);
+app.use('/api/settings', settingsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
