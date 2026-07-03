@@ -91,6 +91,29 @@
 
 ## 실행 방법
 
+### Docker Compose (권장)
+
+```bash
+# 1. 환경변수 설정
+cp .env.example .env
+# .env 파일을 열어 OPENAI_API_KEY 등 설정
+
+# 2. 전체 서비스 시작 (백그라운드)
+make up
+# 또는
+docker-compose up -d
+
+# 3. 로그 확인
+make logs
+
+# 4. 서비스 중지
+make down
+```
+
+접속: http://localhost (Nginx 프록시 경유)
+
+### 로컬 개발 (도커 없이)
+
 ```bash
 # 의존성 설치
 cd server && npm install
@@ -104,9 +127,21 @@ cd server && npx tsx src/index.ts
 cd client && npx vite --host 0.0.0.0
 
 # 또는 동시 실행
-npm install  # root에서 concurrently 설치
-npm run dev
+npm install && npm run dev
 ```
+
+### Docker 관리 명령어 (Makefile)
+
+| 명령어 | 설명 |
+|---------|------|
+| `make up` | 전체 서비스 시작 (백그라운드) |
+| `make down` | 전체 서비스 중지 |
+| `make build` | 이미지 빌드 |
+| `make logs` | 전체 로그 확인 |
+| `make status` | 서비스 상태 확인 |
+| `make clean` | 전체 정리 (볼륨 포함) |
+| `make db-shell` | PostgreSQL 셸 접속 |
+| `make backup-db` | 데이터베이스 백업 |
 
 ## API 엔드포인트
 

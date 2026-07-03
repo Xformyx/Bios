@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # ============================================================
+  # PostgreSQL - 주 데이터베이스
+  # ============================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: myhealth-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: myhealth
+      POSTGRES_USER: myhealth
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-myhealth_dev_2024}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myhealth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - myhealth-network
+
+  # ============================================================
+  # Redis - 캐시 및 세션 저장소
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: myhealth-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - myhealth-network
+
+  # ============================================================
+  # Backend API Server (Express + TypeScript)
+  # ============================================================
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: myhealth-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      JWT_SECRET: ${JWT_SECRET:-myhealth-docker-secret-key-2024}
+      DATABASE_URL: postgresql://myhealth:${POSTGRES_PASSWORD:-myhealth_dev_2024}@postgres:5432/myhealth
+      REDIS_URL: redis://redis:6379
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_API_BASE: ${OPENAI_API_BASE:-}
+      MYHEALTHWAY_CLIENT_ID: ${MYHEALTHWAY_CLIENT_ID:-testbed-client-id}
+      MYHEALTHWAY_CLIENT_SECRET: ${MYHEALTHWAY_CLIENT_SECRET:-testbed-client-secret}
+      MYHEALTHWAY_REDIRECT_URI: ${MYHEALTHWAY_REDIRECT_URI:-http://localhost:3001/api/myhealthway/callback}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - upload_data:/app/uploads
+    networks:
+      - myhealth-network
+
+  # ============================================================
+  # Frontend Client (React + Vite)
+  # ============================================================
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
+    container_name: myhealth-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - myhealth-network
+
+# ============================================================
+# Volumes
+# ============================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  upload_data:
+    driver: local
+
+# ============================================================
+# Networks
+# ============================================================
+networks:
+  myhealth-network:
+    driver: bridge
