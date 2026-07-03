@@ -10,11 +10,13 @@ import AuditView from './pages/AuditView';
 import GoalsView from './pages/GoalsView';
 import MyHealthWayView from './pages/MyHealthWayView';
 import SettingsView from './pages/SettingsView';
+import NHISCheckupView from './pages/NHISCheckupView';
 
 function App() {
   const navItems = [
     { to: '/', icon: BarChart3, label: '대시보드' },
     { to: '/upload', icon: Upload, label: '검진 업로드' },
+    { to: '/nhis', icon: FileText, label: '검진데이터 조회' },
     { to: '/wearable', icon: Activity, label: '웨어러블' },
     { to: '/goals', icon: ClipboardList, label: '90일 목표' },
     { to: '/coach', icon: MessageCircle, label: 'AI 코치' },
@@ -76,6 +78,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/upload" element={<CheckupUpload />} />
+            <Route path="/nhis" element={<NHISCheckupView />} />
             <Route path="/wearable" element={<WearableView />} />
             <Route path="/goals" element={<GoalsView />} />
             <Route path="/coach" element={<HealthCoach />} />
