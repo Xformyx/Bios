@@ -9,6 +9,7 @@ import { aiCoachRouter } from './routes/aiCoach.js';
 import { reportRouter } from './routes/report.js';
 import { auditRouter } from './routes/audit.js';
 import { uploadRouter } from './routes/upload.js';
+import { myhealthwayRouter } from './routes/myhealthway.js';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use('/api/ai-coach', aiCoachRouter);
 app.use('/api/report', reportRouter);
 app.use('/api/audit', auditRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/myhealthway', myhealthwayRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

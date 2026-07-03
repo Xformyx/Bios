@@ -8,6 +8,7 @@ import ReportView from './pages/ReportView';
 import ConsentView from './pages/ConsentView';
 import AuditView from './pages/AuditView';
 import GoalsView from './pages/GoalsView';
+import MyHealthWayView from './pages/MyHealthWayView';
 
 function App() {
   const navItems = [
@@ -17,6 +18,7 @@ function App() {
     { to: '/goals', icon: ClipboardList, label: '90일 목표' },
     { to: '/coach', icon: MessageCircle, label: 'AI 코치' },
     { to: '/report', icon: FileText, label: '리포트' },
+    { to: '/myhealthway', icon: Activity, label: '고속도로 연동' },
     { to: '/consent', icon: Shield, label: '동의 관리' },
     { to: '/audit', icon: ClipboardList, label: '접근 로그' },
   ];
@@ -76,6 +78,7 @@ function App() {
             <Route path="/goals" element={<GoalsView />} />
             <Route path="/coach" element={<HealthCoach />} />
             <Route path="/report" element={<ReportView />} />
+            <Route path="/myhealthway" element={<MyHealthWayView />} />
             <Route path="/consent" element={<ConsentView />} />
             <Route path="/audit" element={<AuditView />} />
           </Routes>
