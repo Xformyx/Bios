@@ -1,0 +1,15 @@
+{
+  "name": "myhealth-market-lite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "마이데이터 기반 개인 건강관리 플랫폼",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
