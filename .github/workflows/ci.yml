@@ -1,0 +1,31 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install & build server
+        run: cd server && npm ci
+      - name: Install & build client
+        run: cd client && npm ci && npm run build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build server image
+        run: docker build -t myhealth-server ./server
+      - name: Build client image
+        run: docker build -t myhealth-client ./client
