@@ -15,14 +15,20 @@ import { identityRouter } from './routes/identity.js';
 import { extendedRouter } from './routes/extended.js';
 import { genomicRouter } from './routes/genomic.js';
 
+import { globalErrorHandler, notFoundHandler, rateLimiter, logger, metrics, cache } from './services/infrastructure.js';
+import { database } from './services/database.js';
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// 미들웨어
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(metrics.requestMetrics());
+app.use(rateLimiter.apiRateLimit());
 
 // API Routes
 app.use('/api/auth', authRouter);
@@ -40,12 +46,23 @@ app.use('/api/ext', extendedRouter);
 app.use('/api/genomic', genomicRouter);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'MyHealth Market Lite API' });
+app.get('/api/health', async (req, res) => {
+  const dbHealth = await database.healthCheck();
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'MyHealth Market Lite API', database: dbHealth, cache: { mode: cache.getMode(), size: cache.getSize() } });
 });
 
-app.listen(PORT, () => {
-  console.log(`[MyHealth API] Server running on port ${PORT}`);
+// Metrics endpoint
+app.get('/api/metrics', (req, res) => { res.json(metrics.getMetrics()); });
+
+// 404 핸들러
+app.use(notFoundHandler);
+
+// 글로벌 에러 핸들러
+app.use(globalErrorHandler);
+
+app.listen(PORT, async () => {
+  await database.connect();
+  logger.info({ msg: `MyHealth API Server running on port ${PORT}`, port: PORT, env: process.env.NODE_ENV || 'development' });
 });
 
 export default app;
