@@ -18,12 +18,54 @@ import GenomicView from './pages/GenomicView';
 import { ToastProvider } from './components/Toast';
 import { ThemeToggle } from './components/ThemeToggle';
 import { Onboarding } from './components/Onboarding';
+import LoginPage from './pages/LoginPage';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('auth_token'));
+  const [user, setUser] = useState<any>(() => {
+    const saved = localStorage.getItem('auth_user');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [showOnboarding, setShowOnboarding] = useState(() => {
     return !localStorage.getItem('onboarding_completed');
   });
+
+  // URL에서 OAuth 토큰 처리
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      localStorage.setItem('auth_token', token);
+      setIsLoggedIn(true);
+      // 사용자 정보 조회
+      fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json()).then(u => { setUser(u); localStorage.setItem('auth_user', JSON.stringify(u)); });
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
+
+  const handleLogin = (token: string, userData: any) => {
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('auth_user', JSON.stringify(userData));
+    setIsLoggedIn(true);
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    setIsLoggedIn(false);
+    setUser(null);
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <ToastProvider>
+        <LoginPage onLogin={handleLogin} />
+      </ToastProvider>
+    );
+  }
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('onboarding_completed', 'true');

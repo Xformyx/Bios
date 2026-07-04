@@ -1,13 +1,30 @@
 const API_BASE = '/api';
 
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('auth_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${endpoint}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...getAuthHeaders(),
       ...options?.headers,
     },
     ...options,
   });
+
+  if (res.status === 401) {
+    // 인증 만료 시 로그아웃 처리
+    const data = await res.json().catch(() => ({}));
+    if (data.code === 'TOKEN_EXPIRED' || data.code === 'AUTH_REQUIRED') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.href = '/';
+    }
+    throw new Error(data.error || '인증이 필요합니다.');
+  }
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ error: 'Unknown error' }));
@@ -59,9 +76,14 @@ export const api = {
   uploadCheckup: (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    return fetch(`${API_BASE}/upload/checkup`, { method: 'POST', body: formData }).then(r => r.json());
+    return fetch(`${API_BASE}/upload/checkup`, {
+      method: 'POST',
+      headers: { ...getAuthHeaders() },
+      body: formData,
+    }).then(r => r.json());
   },
 
   // Auth
   getMe: () => fetchApi<any>('/auth/me'),
+  getProviders: () => fetchApi<any>('/auth/providers'),
 };
