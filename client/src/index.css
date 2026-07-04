@@ -2,33 +2,161 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Design System - MyHealth Market Lite
+   ============================================================ */
+
 @layer base {
+  /* Pretendard 폰트 로드 */
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+
+  :root {
+    --color-primary: 11 131 245;
+    --color-bg: 249 250 251;
+    --color-surface: 255 255 255;
+    --color-text: 17 24 39;
+    --color-text-secondary: 107 114 128;
+    --color-border: 229 231 235;
+    --sidebar-width: 16rem;
+    --header-height: 0px;
+    --transition-fast: 150ms;
+    --transition-normal: 250ms;
+    --transition-slow: 400ms;
+  }
+
+  .dark {
+    --color-bg: 17 24 39;
+    --color-surface: 31 41 55;
+    --color-text: 243 244 246;
+    --color-text-secondary: 156 163 175;
+    --color-border: 55 65 81;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    @apply antialiased transition-colors duration-300;
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-text));
+  }
+
+  /* 스크롤바 스타일링 */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-gray-300 dark:bg-gray-600 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-gray-400 dark:bg-gray-500; }
+
+  /* 포커스 링 (접근성) */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-900;
   }
 }
 
 @layer components {
+  /* 카드 */
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-all duration-200;
   }
+  .card:hover {
+    @apply shadow-md;
+  }
+
+  /* 버튼 */
   .btn-primary {
-    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors duration-200;
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-medium py-2.5 px-5 rounded-lg
+           transition-all duration-200 transform active:scale-[0.97]
+           focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
   .btn-secondary {
-    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2.5 px-5 rounded-lg transition-colors duration-200;
+    @apply bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 
+           text-gray-700 dark:text-gray-200 font-medium py-2.5 px-5 rounded-lg
+           transition-all duration-200 transform active:scale-[0.97]
+           focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2;
   }
-  .status-normal {
-    @apply bg-green-100 text-green-800;
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-medium py-2.5 px-5 rounded-lg
+           transition-all duration-200 transform active:scale-[0.97];
   }
-  .status-caution {
-    @apply bg-yellow-100 text-yellow-800;
+
+  /* 상태 배지 */
+  .status-normal { @apply bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300; }
+  .status-caution { @apply bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300; }
+  .status-warning { @apply bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300; }
+  .status-critical { @apply bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300; }
+
+  /* 입력 필드 */
+  .input {
+    @apply w-full border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm
+           bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
+           placeholder-gray-400 dark:placeholder-gray-500
+           focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent
+           transition-all duration-200;
   }
-  .status-warning {
-    @apply bg-orange-100 text-orange-800;
+
+  /* 스켈레톤 로딩 */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
   }
-  .status-critical {
-    @apply bg-red-100 text-red-800;
+
+  /* 페이지 전환 애니메이션 */
+  .page-enter {
+    @apply animate-fadeIn;
   }
+
+  /* 토스트 */
+  .toast {
+    @apply fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg border
+           transform transition-all duration-300 ease-out
+           flex items-center gap-3 max-w-sm;
+  }
+  .toast-success { @apply bg-green-50 dark:bg-green-900/50 border-green-200 dark:border-green-700 text-green-800 dark:text-green-200; }
+  .toast-error { @apply bg-red-50 dark:bg-red-900/50 border-red-200 dark:border-red-700 text-red-800 dark:text-red-200; }
+  .toast-info { @apply bg-blue-50 dark:bg-blue-900/50 border-blue-200 dark:border-blue-700 text-blue-800 dark:text-blue-200; }
+}
+
+@layer utilities {
+  /* 애니메이션 */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideInRight {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-16px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .animate-fadeIn { animation: fadeIn var(--transition-normal) ease-out; }
+  .animate-slideInRight { animation: slideInRight var(--transition-normal) ease-out; }
+  .animate-slideInLeft { animation: slideInLeft var(--transition-normal) ease-out; }
+  .animate-slideUp { animation: slideUp var(--transition-normal) ease-out; }
+  .animate-scaleIn { animation: scaleIn var(--transition-fast) ease-out; }
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent 25%, rgba(255,255,255,0.3) 50%, transparent 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* 모바일 유틸리티 */
+  .mobile-only { @apply block lg:hidden; }
+  .desktop-only { @apply hidden lg:block; }
 }
