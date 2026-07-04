@@ -112,7 +112,6 @@ function App() {
                           : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-gray-900 dark:hover:text-gray-200'
                       }`
                     }
-                    aria-current={({ isActive }: any) => isActive ? 'page' : undefined}
                   >
                     <item.icon className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
                     <span>{item.label}</span>
