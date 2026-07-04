@@ -13,6 +13,7 @@ import { myhealthwayRouter } from './routes/myhealthway.js';
 import { settingsRouter } from './routes/settings.js';
 import { identityRouter } from './routes/identity.js';
 import { extendedRouter } from './routes/extended.js';
+import { genomicRouter } from './routes/genomic.js';
 
 dotenv.config();
 
@@ -36,6 +37,7 @@ app.use('/api/myhealthway', myhealthwayRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/identity', identityRouter);
 app.use('/api/ext', extendedRouter);
+app.use('/api/genomic', genomicRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

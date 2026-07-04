@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { store } from '../utils/store.js';
 import { authenticateToken, AuthRequest } from '../middleware/auth.js';
 import { llmProvider } from '../services/llmProvider.js';
+import { dtcGenomicService } from '../services/dtcGenomic.js';
 
 export const aiCoachRouter = Router();
 aiCoachRouter.use(authenticateToken);
@@ -66,6 +67,9 @@ aiCoachRouter.post('/chat', async (req: AuthRequest, res: Response) => {
     const latestCheckup = checkups[checkups.length - 1];
     const recentWearable = wearable.slice(-7);
 
+    // 유전체 데이터 컨텍스트 추가
+    const genomicContext = dtcGenomicService.getGenomicContextForAI(req.userId!);
+
     let contextMessage = '## 사용자 건강 데이터 컨텍스트\n\n';
     if (latestCheckup) {
       contextMessage += `### 최근 검진 (${latestCheckup.checkupDate})\n`;
@@ -81,6 +85,11 @@ aiCoachRouter.post('/chat', async (req: AuthRequest, res: Response) => {
       const avgSleep = (recentWearable.filter(w => w.sleepHours).reduce((a, w) => a + (w.sleepHours || 0), 0) / recentWearable.length).toFixed(1);
       contextMessage += `- 평균 걸음 수: ${avgSteps}걸음/일\n`;
       contextMessage += `- 평균 수면: ${avgSleep}시간/일\n`;
+    }
+
+    // 유전체 데이터가 있으면 컨텍스트에 추가
+    if (genomicContext) {
+      contextMessage += '\n' + genomicContext + '\n';
     }
 
     if (goals.length > 0) {
